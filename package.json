@@ -4,5 +4,14 @@
   "description": "automate accounting stuff",
   "main": "index.js",
   "author": "zbw322092 <zbw322092@hotmail.com>",
-  "license": "MIT"
+  "license": "MIT",
+  "dependencies": {
+    "nconf": "^0.10.0",
+    "ts-node": "^6.0.5",
+    "xlsx": "^0.12.13"
+  },
+  "devDependencies": {
+    "@types/nconf": "^0.0.37",
+    "@types/node": "^10.1.3"
+  }
 }
