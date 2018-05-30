@@ -1,6 +1,16 @@
-import { createConnection } from "typeorm";
-import nconf from "./config/config";
+import 'reflect-metadata';
+import { createConnection } from 'typeorm';
+import nconf from './config/config';
+import { FileParser } from './modules/parser/FileParser';
 
-createConnection(nconf.get('database')).then((connection) => {
-  console.log('db connected');
-}).catch((e) => { console.error(e); })
+const bootstrape = async () => {
+  try {
+    await createConnection(nconf.get('database'));
+  } catch (e) { console.error(e); }
+
+  const fileParser = new FileParser();
+
+  fileParser.readFileStream('data-source.xlsx');
+};
+
+bootstrape();
