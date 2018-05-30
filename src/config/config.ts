@@ -1,7 +1,9 @@
 import * as path from 'path';
 import * as nconf from 'nconf';
 
-const rootPath = path.join(__dirname, '../');
+const env = process.env.NODE_ENV || 'dev';
+
+const srcRootPath = path.join(__dirname, '../');
 const baseConfigFilePath = path.join(__dirname, './config-files');
 
 /**
@@ -20,6 +22,8 @@ nconf.argv();
  */
 nconf.env();
 
-nconf.add('rootPaths', { type: 'literal', store: { 'paths': { 'root': rootPath } } });
+nconf.add('srcRootPaths', { type: 'literal', store: { 'paths': { 'src': srcRootPath } } });
+
+nconf.file('configEnv', path.join(baseConfigFilePath, `config.${env}.json`));
 
 export default nconf;

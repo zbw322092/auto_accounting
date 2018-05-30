@@ -1,0 +1,26 @@
+{
+  "server": {
+    "protocol": "http",
+    "host": "localhost",
+    "port": 3999
+  },
+  "database": {
+    "type": "mysql",
+    "host": "localhost",
+    "port": 3306,
+    "username": "root",
+    "password": "root",
+    "database": "bw_auto_accounting",
+    "entities": [
+      "src/modules/entities/**.entity{.ts,.js}"
+    ],
+    "synchronize": true,
+    "logging": true,
+    "migrations": [
+      "src/data/db/migrations/*{.ts,.js}"
+    ],
+    "cli": {
+      "migrationsDir": "src/data/db/migrations/"
+    }
+  }
+}
