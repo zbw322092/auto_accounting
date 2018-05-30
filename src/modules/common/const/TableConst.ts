@@ -33,7 +33,7 @@ export interface ITradesCols {
 export interface ITerminalMarkertCols {
   '证券名称': string;
   '期末剩余数量': number;
-  '期末市值': string;
+  '期末市值': number;
 }
 
 export interface IBeginningPeriodCols {

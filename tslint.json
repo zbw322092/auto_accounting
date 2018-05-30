@@ -48,6 +48,7 @@
     "quotemark": [
       true,
       "single",
+      "double",
       "jsx-double"
     ],
     "trailing-comma": false,

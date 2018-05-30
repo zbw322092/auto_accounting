@@ -22,7 +22,7 @@ nconf.argv();
  */
 nconf.env();
 
-nconf.add('srcRootPaths', { type: 'literal', store: { 'paths': { 'src': srcRootPath } } });
+nconf.add('srcRootPaths', { type: 'literal', store: { paths: { src: srcRootPath } } });
 
 nconf.file('configEnv', path.join(baseConfigFilePath, `config.${env}.json`));
 
