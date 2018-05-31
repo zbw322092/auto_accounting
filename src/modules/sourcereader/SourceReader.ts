@@ -12,7 +12,7 @@ import { IdPrefix } from '../common/const/idPrefix';
 import { StockTerminalMarketValue } from '../entities/stock.terminal.market.value.entity';
 import { NcStockBeginningPeriod } from '../entities/nc.stock.beginning.period.entity';
 import { NcStockCode } from '../entities/nc.stock.code.entity';
-import { warningText } from '../../utils/chalkColors';
+import { warningText, greenBoldText } from '../../utils/chalkColors';
 
 export class SourceReader {
 
@@ -83,7 +83,7 @@ export class SourceReader {
         });
       })
     ).then((results) => {
-      console.log(`${results.length} records have been inserted successfully`);
+      console.log(greenBoldText(`${results.length} records have been inserted successfully`));
     }).catch((e) => { console.error(`error happened: ${e}`); });
   }
 
@@ -100,7 +100,7 @@ export class SourceReader {
         });
       })
     ).then((results) => {
-      console.log(`${results.length} records have been inserted successfully`);
+      console.log(greenBoldText(`${results.length} records have been inserted successfully`));
     }).catch((e) => { console.error(`error happened: ${e}`); });
   }
 
@@ -118,7 +118,7 @@ export class SourceReader {
         });
       })
     ).then((results) => {
-      console.log(`${results.length} records have been inserted successfully`);
+      console.log(greenBoldText(`${results.length} records have been inserted successfully`));
     }).catch((e) => { console.error(`error happened: ${e}`); });
   }
 
@@ -139,7 +139,7 @@ export class SourceReader {
         });
       })
     ).then((results) => {
-      console.log(`${results.length} records have been inserted successfully`);
+      console.log(greenBoldText(`${results.length} records have been inserted successfully`));
     }).catch((e) => { console.error(`error happened: ${e}`); });
   }
 }

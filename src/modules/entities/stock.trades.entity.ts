@@ -17,19 +17,21 @@ export class StockTrades {
   @Column({ type: 'varchar', length: 50 })
   public trade_type: string;
 
+  // 成交数量
   @Column({ type: 'int' })
   public trade_amt: number;
 
-  @Column({ type: 'double' })
+  @Column({ type: 'decimal', precision: 11, scale: 4 })
   public trade_price: number;
 
-  @Column({ type: 'double' })
+  // 成交金额
+  @Column({ type: 'decimal', precision: 12, scale: 2 })
   public trade_total_price: number;
 
-  @Column({ type: 'double' })
+  @Column({ type: 'decimal', precision: 12, scale: 2 })
   public happened_total_price: number;
 
-  @Column({ type: 'double' })
+  @Column({ type: 'decimal', precision: 12, scale: 2 })
   public rest_total_price: number;
 
   @Column({ type: 'varchar', length: 50, nullable: true })
@@ -50,22 +52,22 @@ export class StockTrades {
   @Column({ type: 'int' })
   public stock_amt: number;
 
-  @Column({ type: 'double' })
+  @Column({ type: 'decimal', precision: 9, scale: 2 })
   public broker_commission: number;
 
-  @Column({ type: 'double' })
+  @Column({ type: 'decimal', precision: 9, scale: 2 })
   public stamp_duty: number;
 
-  @Column({ type: 'double' })
+  @Column({ type: 'decimal', precision: 9, scale: 2 })
   public exchange_fee: number;
 
-  @Column({ type: 'double' })
+  @Column({ type: 'decimal', precision: 9, scale: 2 })
   public transfer_ownership_fee: number;
 
-  @Column({ type: 'double' })
+  @Column({ type: 'decimal', precision: 9, scale: 2 })
   public other_fee: number;
 
-  @Column({ type: 'double' })
+  @Column({ type: 'decimal', precision: 9, scale: 2 })
   public delegate_fee: number;
 
   @Column({ type: 'text' })

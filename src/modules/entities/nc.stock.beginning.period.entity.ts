@@ -11,9 +11,11 @@ export class NcStockBeginningPeriod {
   @Column({ type: 'varchar', length: 100 })
   public direction: string;
 
-  @Column({ type: 'double', nullable: true })
+  // 期初成本
+  @Column({ type: 'decimal', precision: 12, scale: 2, nullable: true })
   public begin_period_cost: number;
 
-  @Column({ type: 'double', nullable: true })
+  // 期初公允
+  @Column({ type: 'decimal', precision: 12, scale: 2, nullable: true })
   public begin_period_diff: number;
 }

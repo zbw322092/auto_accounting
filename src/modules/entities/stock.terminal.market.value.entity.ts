@@ -8,9 +8,9 @@ export class StockTerminalMarketValue {
   @Column({ type: 'varchar', length: 200 })
   public stock_name: string;
 
-  @Column({ type: 'double' })
+  @Column({ type: 'decimal', precision: 12, scale: 2, nullable: true })
   public rest_amt: number;
 
-  @Column({ type: 'double' })
+  @Column({ type: 'decimal', precision: 12, scale: 2, nullable: true })
   public rest_market_value: number;
 }

@@ -8,6 +8,7 @@ export class NcStockCode {
   @Column({ type: 'varchar', length: 200 })
   public org_name: string;
 
+  // 档案编码
   @Column({ type: 'varchar', length: 50 })
   public archive_code: string;
 

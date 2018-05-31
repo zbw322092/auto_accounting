@@ -6,6 +6,8 @@ export const cyanBoldText = (text: string): string => chalk.cyan.bold(text);
 
 export const greenText = (text: string): string => chalk.green(text);
 
+export const greenBoldText = (text: string): string => chalk.green.bold(text);
+
 export const grayText = (text: string): string => chalk.gray(text);
 
 export const warningText = (text: string): string => chalk.red.bold(text);
