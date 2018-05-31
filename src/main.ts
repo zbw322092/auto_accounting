@@ -14,8 +14,10 @@ const bootstrape = async () => {
   // sourceReader.readFileStream('data-source.xlsx');
 
   const dataProcessor = new DataProcessor();
-  // const result = await dataProcessor.sellCostOriginCredit();
-  // console.log(result);
+  const result = await dataProcessor.documentMakeDate('黑猫股份');
+  // const result = await dataProcessor.marketValueOneOriginCredit('黑猫股份');
+
+  console.log(result);
 };
 
 bootstrape();

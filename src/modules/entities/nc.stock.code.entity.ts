@@ -12,6 +12,7 @@ export class NcStockCode {
   @Column({ type: 'varchar', length: 50 })
   public archive_code: string;
 
+  // 档案名称
   @Column({ type: 'varchar', length: 100 })
   public archive_name: string;
 
