@@ -8,9 +8,9 @@ import { NcStockCode } from '../entities/nc.stock.code.entity';
 export class DataProcessor {
 
   public async getAllStockNames() {
-    const allStockNames = await getRepository(StockTrades)
+    const allStockNames: Array<{ stockName: string }> = await getRepository(StockTrades)
       .createQueryBuilder()
-      .select('stock_name')
+      .select('stock_name AS stockName')
       .groupBy('stock_name')
       .execute();
 
@@ -212,15 +212,11 @@ export class DataProcessor {
   public async marketValueOneOriginCredit(stockName: string) {
     // 期末市值
     const terminalMarketValue = await this.terminalMarketValue(stockName);
-    console.log('terminalMarketValue: ', terminalMarketValue);
     // 期初成本
     const beginPeriodCost = await this.beginPeriodCost(stockName);
-    console.log('beginPeriodCost: ', beginPeriodCost);
     // 期初公允
     const beginPeriodDiff = await this.beginPeriodDiff(stockName);
-    console.log('beginPeriodDiff: ', beginPeriodDiff);
     const buyDealAmtSum = await this.buyDealAmtSum(stockName);
-    console.log('buyDealAmtSum: ', buyDealAmtSum);
     const sellCostOriginCredit = await this.sellCostOriginCredit(stockName);
 
     return numSub(terminalMarketValue,
@@ -245,6 +241,28 @@ export class DataProcessor {
   public async assistAccounting(stockName: string) {
     const archiveCode = await this.getArchiveCode(stockName);
 
-    return `JY49A0018:${archiveCode}`;
+    return `${archiveCode}:理财产品`;
+  }
+
+  // 买卖标志为“卖出” + 备注不是“证券卖出” 的对应的 成交额
+  public async specialRecords(stockName: string) {
+    const specialRecordsResult: Array<{ tradeTotalPrice: string }> = await getRepository(StockTrades)
+      .createQueryBuilder()
+      .select('trade_total_price AS tradeTotalPrice')
+      .where(`trade_type = '卖出'`)
+      .andWhere(`remark != '证券卖出'`)
+      .execute();
+
+    return specialRecordsResult;
+  }
+
+  public async specialRecordsSum(stockName: string) {
+    const specialRecordsResult = await this.specialRecords(stockName);
+    let recordsSum: number = 0;
+    specialRecordsResult.forEach((record) => {
+      recordsSum = numAdd(recordsSum, record.tradeTotalPrice);
+    });
+
+    return recordsSum;
   }
 }
