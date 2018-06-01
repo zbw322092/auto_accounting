@@ -228,13 +228,15 @@ export class DataProcessor {
   }
 
   private async getArchiveCode(stockName: string): Promise<string> {
-    const archiveCode = await getRepository(NcStockCode)
+    const archiveCode: Array<{ archive_code: string }> = await getRepository(NcStockCode)
       .createQueryBuilder()
       .select('archive_code')
       .where(`archive_name = '${stockName}'`)
       .execute();
 
-    return archiveCode;
+    if (!archiveCode.length) { return ''; }
+
+    return archiveCode[0].archive_code;
   }
 
   // 辅助核算

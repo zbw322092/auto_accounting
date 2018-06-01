@@ -26,7 +26,7 @@ export class OutputVoucher {
   public attached_documents: number;
 
   @Column({ type: 'varchar', length: 100 })
-  public document_maker_code: number;
+  public document_maker_code: string;
 
   @Column({ type: 'varchar', length: 50 })
   public document_make_date: string;

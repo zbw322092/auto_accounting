@@ -2,9 +2,13 @@ import { DataProcessor } from './DataProcessor';
 import { ConstData } from './ConstData';
 import { uniqid } from '../../utils/uniqid';
 import { IdPrefix } from '../common/const/idPrefix';
+import { numAdd } from '../../utils/caculation';
+import { getRepository } from 'typeorm';
+import { OutputVoucher } from '../entities/output.voucher.entity';
+import { warningText, greenBoldText } from '../../utils/chalkColors';
 
 export class ResultsAssembler {
-  constructor () {
+  constructor() {
     this.dataProcessor = new DataProcessor();
   }
 
@@ -17,7 +21,7 @@ export class ResultsAssembler {
       account_book: ConstData.AccountBookCode,
       voucher_type: ConstData.VoucherTypeCode,
       voucher_code: ConstData.voucherCode,
-      attached_documents: ConstData.AttachedDocNum,
+      attached_documents: Number(ConstData.AttachedDocNum),
       document_maker_code: ConstData.DocMakerCode,
       document_make_date: documentMakeDate,
       currency: ConstData.Currency,
@@ -132,5 +136,49 @@ export class ResultsAssembler {
       original_currency_credit: marketValueOneOriginCredit > 0 ? null : Math.abs(marketValueOneOriginCredit),
       domestic_currency_credit: marketValueOneOriginCredit > 0 ? null : Math.abs(marketValueOneOriginCredit)
     });
+
+    // 买卖标志为“卖出” + 备注不是“证券卖出” 的对应的 成交额数据
+    const specialRecords = await this.dataProcessor.specialRecords(stockName);
+    const specialResults = specialRecords.map((record) => {
+      return Object.assign({}, commonTpl, {
+        id: uniqid(IdPrefix.Voucher),
+        record_name: ConstData.RecordName.specialRecord,
+        abstract: '东证账户结息',
+        account_code: ConstData.AccountCode.specialRecord,
+        original_currency_debit: null,
+        domestic_currency_debit: null,
+        original_currency_credit: record.tradeTotalPrice,
+        domestic_currency_credit: record.tradeTotalPrice
+      });
+    });
+
+    // 买卖标志为“卖出” + 备注不是“证券卖出” 的对应的 成交额数据 的 总和
+    let sumValue: number = 0;
+    specialRecords.forEach((record) => {
+      sumValue = numAdd(sumValue, record.tradeTotalPrice);
+    });
+    let specialResultsSum;
+    if (specialRecords.length) {
+      specialResultsSum = Object.assign({}, commonTpl, {
+        id: uniqid(IdPrefix.Voucher),
+        record_name: ConstData.RecordName.specialRecordSum,
+        abstract: '东证账户结息',
+        account_code: ConstData.AccountCode.specialRecordSum,
+        original_currency_debit: sumValue,
+        domestic_currency_debit: sumValue,
+        original_currency_credit: null,
+        domestic_currency_credit: null
+      });
+    }
+
+    // insert all records
+    let allRecordsArr = [ result1, result2, result3, result4, result5, result6, result7, result8 ];
+    if (specialRecords.length) {
+      allRecordsArr = allRecordsArr.concat(specialResults, specialResultsSum);
+    }
+    try {
+      await getRepository(OutputVoucher).insert(allRecordsArr);
+      console.log(greenBoldText('insert successfully'));
+    } catch (e) { console.log(warningText('insert error happened: '), e); }
   }
 }
