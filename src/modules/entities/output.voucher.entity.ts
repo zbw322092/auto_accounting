@@ -2,15 +2,19 @@ import { Entity, PrimaryColumn, Column, PrimaryGeneratedColumn } from 'typeorm';
 
 @Entity()
 export class OutputVoucher {
-  @PrimaryGeneratedColumn({ type: 'int' })
-  public record_index: number;
+
+  @PrimaryColumn({ type: 'varchar', length: 50 })
+  public id: string;
 
   @Column({ type: 'varchar', length: 50 })
-  public id: string;
+  public record_counter: string;
 
   // 给8条固定记录分别分配的名称
   @Column({ type: 'varchar', length: 50 })
   public record_name: string;
+
+  @Column({ type: 'varchar', length: 200 })
+  public stock_name: string;
 
   // 核算账簿
   @Column({ type: 'varchar', length: 100 })

@@ -10,7 +10,8 @@ const bootstrape = async () => {
     await createConnection(nconf.get('database'));
 
     const resultsAssembler = new ResultsAssembler();
-    resultsAssembler.generateStockVoucherResults('黑猫股份');
+    resultsAssembler.generateAllFlowResults();
+    // resultsAssembler.generateAllVoucherResults();
 
   } catch (e) { console.error(e); }
 };

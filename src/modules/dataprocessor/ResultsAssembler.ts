@@ -6,6 +6,7 @@ import { numAdd } from '../../utils/caculation';
 import { getRepository } from 'typeorm';
 import { OutputVoucher } from '../entities/output.voucher.entity';
 import { warningText, greenBoldText } from '../../utils/chalkColors';
+import { OutputFlowAnalyse } from '../entities/output.flow.analyse.entity';
 
 export class ResultsAssembler {
   constructor() {
@@ -14,7 +15,13 @@ export class ResultsAssembler {
 
   public dataProcessor: DataProcessor;
 
-  public async generateStockVoucherResults(stockName: string) {
+  private startPointer = 0;
+
+  private indexCounter(): string {
+    return String(++this.startPointer);
+  }
+
+  public async generateSingleVoucherResult(stockName: string) {
     const documentMakeDate = await this.dataProcessor.documentMakeDate(stockName);
     const assistAccounting = await this.dataProcessor.assistAccounting(stockName);
     const commonTpl = {
@@ -38,7 +45,9 @@ export class ResultsAssembler {
     const buyDealAmtSum = await this.dataProcessor.buyDealAmtSum(stockName);
     const result1 = Object.assign({}, commonTpl, {
       id: uniqid(IdPrefix.Voucher),
+      record_counter: this.indexCounter(),
       record_name: ConstData.RecordName['1-buyCost'],
+      stock_name: stockName,
       abstract: `买入${stockName}`,
       account_code: ConstData.AccountCode['1-buyCost'],
       original_currency_debit: buyDealAmtSum,
@@ -51,7 +60,9 @@ export class ResultsAssembler {
     const buyCommissionSum = await this.dataProcessor.buyCommissionSum(stockName);
     const result2 = Object.assign({}, commonTpl, {
       id: uniqid(IdPrefix.Voucher),
+      record_counter: this.indexCounter(),
       record_name: ConstData.RecordName['2-buyCommission'],
+      stock_name: stockName,
       abstract: `买入${stockName}手续费`,
       account_code: ConstData.AccountCode['2-buyCommission'],
       original_currency_debit: buyCommissionSum,
@@ -64,7 +75,9 @@ export class ResultsAssembler {
     const sellCostOriginCredit = await this.dataProcessor.sellCostOriginCredit(stockName);
     const result3 = Object.assign({}, commonTpl, {
       id: uniqid(IdPrefix.Voucher),
+      record_counter: this.indexCounter(),
       record_name: ConstData.RecordName['3-sellCost'],
+      stock_name: stockName,
       abstract: `卖出${stockName}`,
       account_code: ConstData.AccountCode['3-sellCost'],
       original_currency_debit: null,
@@ -77,7 +90,9 @@ export class ResultsAssembler {
     const sellCommissionSum = await this.dataProcessor.sellCommissionSum(stockName);
     const result4 = Object.assign({}, commonTpl, {
       id: uniqid(IdPrefix.Voucher),
+      record_counter: this.indexCounter(),
       record_name: ConstData.RecordName['4-sellCommission'],
+      stock_name: stockName,
       abstract: `卖出${stockName}手续费`,
       account_code: ConstData.AccountCode['4-sellCommission'],
       original_currency_debit: null,
@@ -90,7 +105,9 @@ export class ResultsAssembler {
     const profitLossOriginCredit = await this.dataProcessor.profitLossOriginCredit(stockName);
     const result5 = Object.assign({}, commonTpl, {
       id: uniqid(IdPrefix.Voucher),
+      record_counter: this.indexCounter(),
       record_name: ConstData.RecordName['5-profitLoss'],
+      stock_name: stockName,
       abstract: `卖出${stockName}盈亏`,
       account_code: ConstData.AccountCode['5-profitLoss'],
       original_currency_debit: null,
@@ -103,7 +120,9 @@ export class ResultsAssembler {
     const debitCreditDiff = await this.dataProcessor.debitCreditDiff(stockName);
     const result6 = Object.assign({}, commonTpl, {
       id: uniqid(IdPrefix.Voucher),
+      record_counter: this.indexCounter(),
       record_name: ConstData.RecordName['6-fundingDiff'],
+      stock_name: stockName,
       abstract: '东证账户变动',
       account_code: ConstData.AccountCode['6-fundingDiff'],
       original_currency_debit: debitCreditDiff > 0 ? null : debitCreditDiff,
@@ -116,7 +135,9 @@ export class ResultsAssembler {
     const marketValueOneOriginCredit = await this.dataProcessor.marketValueOneOriginCredit(stockName);
     const result7 = Object.assign({}, commonTpl, {
       id: uniqid(IdPrefix.Voucher),
+      record_counter: this.indexCounter(),
       record_name: ConstData.RecordName['7-marketValue1'],
+      stock_name: stockName,
       abstract: `${stockName}公允变动`,
       account_code: ConstData.AccountCode['7-marketValue1'],
       original_currency_debit: null,
@@ -128,7 +149,9 @@ export class ResultsAssembler {
     // 8. 市值2
     const result8 = Object.assign({}, commonTpl, {
       id: uniqid(IdPrefix.Voucher),
+      record_counter: this.indexCounter(),
       record_name: ConstData.RecordName['8-marketValue2'],
+      stock_name: stockName,
       abstract: `${stockName}公允变动`,
       account_code: ConstData.AccountCode['8-marketValue2'],
       original_currency_debit: marketValueOneOriginCredit > 0 ? marketValueOneOriginCredit : null,
@@ -142,7 +165,9 @@ export class ResultsAssembler {
     const specialResults = specialRecords.map((record) => {
       return Object.assign({}, commonTpl, {
         id: uniqid(IdPrefix.Voucher),
+        record_counter: this.indexCounter(),
         record_name: ConstData.RecordName.specialRecord,
+        stock_name: stockName,
         abstract: '东证账户结息',
         account_code: ConstData.AccountCode.specialRecord,
         original_currency_debit: null,
@@ -161,7 +186,9 @@ export class ResultsAssembler {
     if (specialRecords.length) {
       specialResultsSum = Object.assign({}, commonTpl, {
         id: uniqid(IdPrefix.Voucher),
+        record_counter: this.indexCounter(),
         record_name: ConstData.RecordName.specialRecordSum,
+        stock_name: stockName,
         abstract: '东证账户结息',
         account_code: ConstData.AccountCode.specialRecordSum,
         original_currency_debit: sumValue,
@@ -172,13 +199,162 @@ export class ResultsAssembler {
     }
 
     // insert all records
-    let allRecordsArr = [ result1, result2, result3, result4, result5, result6, result7, result8 ];
+    let allRecordsArr = [result1, result2, result3, result4, result5, result6, result7, result8];
     if (specialRecords.length) {
       allRecordsArr = allRecordsArr.concat(specialResults, specialResultsSum);
     }
     try {
       await getRepository(OutputVoucher).insert(allRecordsArr);
-      console.log(greenBoldText('insert successfully'));
-    } catch (e) { console.log(warningText('insert error happened: '), e); }
+      console.log(greenBoldText(`${stockName} veucher result insert successfully`));
+    } catch (e) { console.log(warningText('output voucher insert error happened: '), e); }
   }
+
+  public async generateAllVoucherResults() {
+    const allStockNames = await this.dataProcessor.getAllStockNames();
+
+    for (let i = 0, len = allStockNames.length; i < len; i++) {
+      await this.generateSingleVoucherResult(allStockNames[i].stockName);
+    }
+    console.log(greenBoldText('all stock voucher results inserted'));
+  }
+
+  public async generateSingleFlowResult(stockName: string) {
+    const commonTpl = {
+      direction: '0',
+      analyse_currency: ConstData.Currency,
+      group_domestic_currency: null,
+      overall_domestic_currency: null,
+      inner_unit: null
+    };
+
+    const result1Data: Array<{ recordCounter: number, originalCurrencyDebit: string }> = await getRepository(OutputVoucher)
+      .createQueryBuilder()
+      .select('record_counter AS recordCounter, original_currency_debit AS originalCurrencyDebit')
+      .where(`record_name = "${ConstData.RecordName['1-buyCost']}"`)
+      .andWhere(`stock_name = "${stockName}"`)
+      .execute();
+
+    const result2Data: Array<{ recordCounter: number, originalCurrencyDebit: string }> = await getRepository(OutputVoucher)
+      .createQueryBuilder()
+      .select('record_counter AS recordCounter, original_currency_debit AS originalCurrencyDebit')
+      .where(`record_name = "${ConstData.RecordName['2-buyCommission']}"`)
+      .andWhere(`stock_name = "${stockName}"`)
+      .execute();
+
+    const result3Data: Array<{ recordCounter: number, originalCurrencyCredit: string }> = await getRepository(OutputVoucher)
+      .createQueryBuilder()
+      .select('record_counter AS recordCounter, original_currency_credit AS originalCurrencyCredit')
+      .where(`record_name = "${ConstData.RecordName['3-sellCost']}"`)
+      .andWhere(`stock_name = "${stockName}"`)
+      .execute();
+
+    const result4Data: Array<{ recordCounter: number, originalCurrencyCredit: string }> = await getRepository(OutputVoucher)
+      .createQueryBuilder()
+      .select('record_counter AS recordCounter, original_currency_credit AS originalCurrencyCredit')
+      .where(`record_name = "${ConstData.RecordName['4-sellCommission']}"`)
+      .andWhere(`stock_name = "${stockName}"`)
+      .execute();
+
+    const result5Data: Array<{ recordCounter: number, originalCurrencyCredit: string }> = await getRepository(OutputVoucher)
+      .createQueryBuilder()
+      .select('record_counter AS recordCounter, original_currency_credit AS originalCurrencyCredit')
+      .where(`record_name = "${ConstData.RecordName['5-profitLoss']}"`)
+      .andWhere(`stock_name = "${stockName}"`)
+      .execute();
+
+    const resultSpecial: Array<{ recordCounter: number, originalCurrencyCredit: string }> = await getRepository(OutputVoucher)
+      .createQueryBuilder()
+      .select('record_counter AS recordCounter, original_currency_credit AS originalCurrencyCredit')
+      .where(`record_name = "${ConstData.RecordName.specialRecord}"`)
+      .andWhere(`stock_name = "${stockName}"`)
+      .execute();
+
+    const flowResult1 = Object.assign({}, commonTpl, {
+      id: uniqid(IdPrefix.Flow),
+      record_counter: result1Data[0].recordCounter,
+      record_name: ConstData.RecordName['1-buyCost'],
+      stock_name: stockName,
+      original_currency: result1Data[0].originalCurrencyDebit,
+      org_domestic_currency: result1Data[0].originalCurrencyDebit,
+      currency_flow_name: ConstData.CurrencyFlowName['1-buyCost'],
+      currency_flow_code: ConstData.CurrencyFlowCode['1-buyCost']
+    });
+
+    const flowResult2 = Object.assign({}, commonTpl, {
+      id: uniqid(IdPrefix.Flow),
+      record_counter: result2Data[0].recordCounter,
+      record_name: ConstData.RecordName['2-buyCommission'],
+      stock_name: stockName,
+      original_currency: -result2Data[0].originalCurrencyDebit,
+      org_domestic_currency: -result2Data[0].originalCurrencyDebit,
+      currency_flow_name: ConstData.CurrencyFlowName['2-buyCommission'],
+      currency_flow_code: ConstData.CurrencyFlowCode['2-buyCommission']
+    });
+
+    const flowResult3 = Object.assign({}, commonTpl, {
+      id: uniqid(IdPrefix.Flow),
+      record_counter: result3Data[0].recordCounter,
+      record_name: ConstData.RecordName['3-sellCost'],
+      stock_name: stockName,
+      original_currency: result3Data[0].originalCurrencyCredit,
+      org_domestic_currency: result3Data[0].originalCurrencyCredit,
+      currency_flow_name: ConstData.CurrencyFlowName['3-sellCost'],
+      currency_flow_code: ConstData.CurrencyFlowCode['3-sellCost']
+    });
+
+    const flowResult4 = Object.assign({}, commonTpl, {
+      id: uniqid(IdPrefix.Flow),
+      record_counter: result4Data[0].recordCounter,
+      record_name: ConstData.RecordName['4-sellCommission'],
+      stock_name: stockName,
+      original_currency: -result4Data[0].originalCurrencyCredit,
+      org_domestic_currency: -result4Data[0].originalCurrencyCredit,
+      currency_flow_name: ConstData.CurrencyFlowName['4-sellCommission'],
+      currency_flow_code: ConstData.CurrencyFlowCode['4-sellCommission']
+    });
+
+    const flowResult5 = Object.assign({}, commonTpl, {
+      id: uniqid(IdPrefix.Flow),
+      record_counter: result5Data[0].recordCounter,
+      record_name: ConstData.RecordName['5-profitLoss'],
+      stock_name: stockName,
+      original_currency: result5Data[0].originalCurrencyCredit,
+      org_domestic_currency: result5Data[0].originalCurrencyCredit,
+      currency_flow_name: ConstData.CurrencyFlowName['5-profitLoss'],
+      currency_flow_code: ConstData.CurrencyFlowCode['5-profitLoss']
+    });
+
+    const flowSpecialResults = resultSpecial.map((result) => {
+      return Object.assign({}, commonTpl, {
+        id: uniqid(IdPrefix.Flow),
+        record_counter: result.recordCounter,
+        record_name: ConstData.RecordName.specialRecord,
+        stock_name: stockName,
+        original_currency: result.originalCurrencyCredit,
+        org_domestic_currency: result.originalCurrencyCredit,
+        currency_flow_name: ConstData.CurrencyFlowName.specialRecord,
+        currency_flow_code: ConstData.CurrencyFlowCode.specialRecord
+      });
+    });
+
+    let allRecordsArr = [flowResult1, flowResult2, flowResult3, flowResult4, flowResult5];
+    if (resultSpecial.length) {
+      allRecordsArr = allRecordsArr.concat(flowSpecialResults);
+    }
+
+    try {
+      await getRepository(OutputFlowAnalyse).insert(allRecordsArr);
+      console.log(greenBoldText(`${stockName} flow result insert successfully`));
+    } catch (e) { console.log(warningText('output flow insert error happened: '), e); }
+  }
+
+  public async generateAllFlowResults() {
+    const allStockNames = await this.dataProcessor.getAllStockNames();
+
+    for (let i = 0, len = allStockNames.length; i < len; i++) {
+      await this.generateSingleFlowResult(allStockNames[i].stockName);
+    }
+    console.log(greenBoldText('all stock flow results inserted'));
+  }
+
 }

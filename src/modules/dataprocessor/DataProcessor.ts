@@ -7,7 +7,7 @@ import { NcStockCode } from '../entities/nc.stock.code.entity';
 
 export class DataProcessor {
 
-  public async getAllStockNames() {
+  public async getAllStockNames(): Promise<Array<{ stockName: string }>> {
     const allStockNames: Array<{ stockName: string }> = await getRepository(StockTrades)
       .createQueryBuilder()
       .select('stock_name AS stockName')
