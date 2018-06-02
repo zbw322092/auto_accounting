@@ -21,11 +21,11 @@ export class OutputFlowAnalyse {
   public analyse_currency: string;
 
   // 原币
-  @Column({ type: 'decimal', precision: 12, scale: 2 })
+  @Column({ type: 'decimal', precision: 12, scale: 2, nullable: true })
   public original_currency: number;
 
   // 组织本币
-  @Column({ type: 'decimal', precision: 12, scale: 2 })
+  @Column({ type: 'decimal', precision: 12, scale: 2, nullable: true })
   public org_domestic_currency: number;
 
   @Column({ type: 'decimal', precision: 12, scale: 2, nullable: true })
@@ -42,4 +42,7 @@ export class OutputFlowAnalyse {
 
   @Column({ type: 'varchar', length: 50 })
   public currency_flow_code: string;
+
+  @Column({ type: 'varchar', default: 'show' })
+  public visibility: string;
 }

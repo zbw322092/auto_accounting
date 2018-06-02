@@ -1,6 +1,6 @@
 export namespace ConstData {
   // 结果中记录对应的名字
-  export const enum RecordName {
+  export enum RecordName {
     '1-buyCost' = '1-buyCost',
     '2-buyCommission' = '2-buyCommission',
     '3-sellCost' = '3-sellCost',
@@ -67,4 +67,10 @@ export namespace ConstData {
 
   // 业务单元编码
   export const BizUnitCode = '49';
+
+  // 记录在最终的表中是否可见
+  export enum Visibility {
+    'show' = 'show',
+    'hidden' = 'hidden'
+  }
 }

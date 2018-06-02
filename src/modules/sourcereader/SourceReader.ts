@@ -44,10 +44,10 @@ export class SourceReader {
       // table 4 - NC股票代码表
       const stockCodeData: IStockCode[] = XLSX.utils.sheet_to_json(workBookSheets[TableNames.stockCode], transformOptions);
 
-      this.tradesDataHandler(tradesData);
+      // this.tradesDataHandler(tradesData);
       this.terminalMarketDataHandler(terminalMarketData);
-      this.beginningPeriodDataHandler(beginningPeriodData);
-      this.stockCodeDataHandler(stockCodeData);
+      // this.beginningPeriodDataHandler(beginningPeriodData);
+      // this.stockCodeDataHandler(stockCodeData);
     });
   }
 
@@ -89,6 +89,7 @@ export class SourceReader {
 
   private terminalMarketDataHandler = (terminalMarketData: ITerminalMarkertCols[]) => {
     terminalMarketData = terminalMarketData || [];
+
     const terminalMarketRepository = getRepository(StockTerminalMarketValue);
     Promise.all(
       terminalMarketData.map(async (record) => {

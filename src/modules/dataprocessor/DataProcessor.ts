@@ -21,7 +21,7 @@ export class DataProcessor {
     return ((year % 4 === 0) && (year % 100 !== 0)) || (year % 400 === 0);
   }
 
-  private monthLastDay(month: number, year: number): number {
+  public monthLastDay(month: number, year: number): number {
     const month31days = [1, 3, 5, 7, 8, 10, 12];
     const month30days = [4, 6, 9, 11];
 
@@ -247,10 +247,10 @@ export class DataProcessor {
   }
 
   // 买卖标志为“卖出” + 备注不是“证券卖出” 的对应的 成交额
-  public async specialRecords(stockName: string) {
-    const specialRecordsResult: Array<{ tradeTotalPrice: string }> = await getRepository(StockTrades)
+  public async specialRecords() {
+    const specialRecordsResult: Array<{ tradeTotalPrice: string, stockName: string, tradeDate: string }> = await getRepository(StockTrades)
       .createQueryBuilder()
-      .select('trade_total_price AS tradeTotalPrice')
+      .select('trade_total_price AS tradeTotalPrice, stock_name AS stockName, trade_date AS tradeDate')
       .where(`trade_type = '卖出'`)
       .andWhere(`remark != '证券卖出'`)
       .execute();
@@ -258,8 +258,8 @@ export class DataProcessor {
     return specialRecordsResult;
   }
 
-  public async specialRecordsSum(stockName: string) {
-    const specialRecordsResult = await this.specialRecords(stockName);
+  public async specialRecordsSum() {
+    const specialRecordsResult = await this.specialRecords();
     let recordsSum: number = 0;
     specialRecordsResult.forEach((record) => {
       recordsSum = numAdd(recordsSum, record.tradeTotalPrice);

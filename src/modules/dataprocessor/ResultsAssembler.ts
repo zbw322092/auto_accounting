@@ -55,6 +55,9 @@ export class ResultsAssembler {
       original_currency_credit: null,
       domestic_currency_credit: null
     });
+    if (Number(buyDealAmtSum) === 0) {
+      Object.assign(result1, { visibility: ConstData.Visibility.hidden });
+    }
 
     // 2. 买入手续费
     const buyCommissionSum = await this.dataProcessor.buyCommissionSum(stockName);
@@ -70,6 +73,9 @@ export class ResultsAssembler {
       original_currency_credit: null,
       domestic_currency_credit: null
     });
+    if (Number(buyCommissionSum) === 0) {
+      Object.assign(result2, { visibility: ConstData.Visibility.hidden });
+    }
 
     // 3. 卖出成本
     const sellCostOriginCredit = await this.dataProcessor.sellCostOriginCredit(stockName);
@@ -85,6 +91,9 @@ export class ResultsAssembler {
       original_currency_credit: sellCostOriginCredit,
       domestic_currency_credit: sellCostOriginCredit
     });
+    if (Number(sellCostOriginCredit) === 0) {
+      Object.assign(result3, { visibility: ConstData.Visibility.hidden });
+    }
 
     // 4. 卖出手续费
     const sellCommissionSum = await this.dataProcessor.sellCommissionSum(stockName);
@@ -100,6 +109,9 @@ export class ResultsAssembler {
       original_currency_credit: sellCommissionSum,
       domestic_currency_credit: sellCommissionSum
     });
+    if (Number(sellCommissionSum) === 0) {
+      Object.assign(result4, { visibility: ConstData.Visibility.hidden });
+    }
 
     // 5. 盈亏
     const profitLossOriginCredit = await this.dataProcessor.profitLossOriginCredit(stockName);
@@ -115,6 +127,9 @@ export class ResultsAssembler {
       original_currency_credit: profitLossOriginCredit,
       domestic_currency_credit: profitLossOriginCredit
     });
+    if (Number(profitLossOriginCredit) === 0) {
+      Object.assign(result5, { visibility: ConstData.Visibility.hidden });
+    }
 
     // 6. 资金变动
     const debitCreditDiff = await this.dataProcessor.debitCreditDiff(stockName);
@@ -130,6 +145,9 @@ export class ResultsAssembler {
       original_currency_credit: debitCreditDiff > 0 ? debitCreditDiff : null,
       domestic_currency_credit: debitCreditDiff > 0 ? debitCreditDiff : null
     });
+    if (Number(debitCreditDiff) === 0) {
+      Object.assign(result6, { visibility: ConstData.Visibility.hidden });
+    }
 
     // 7. 市值1
     const marketValueOneOriginCredit = await this.dataProcessor.marketValueOneOriginCredit(stockName);
@@ -145,6 +163,9 @@ export class ResultsAssembler {
       original_currency_credit: marketValueOneOriginCredit,
       domestic_currency_credit: marketValueOneOriginCredit
     });
+    if (Number(marketValueOneOriginCredit) === 0) {
+      Object.assign(result7, { visibility: ConstData.Visibility.hidden });
+    }
 
     // 8. 市值2
     const result8 = Object.assign({}, commonTpl, {
@@ -159,15 +180,49 @@ export class ResultsAssembler {
       original_currency_credit: marketValueOneOriginCredit > 0 ? null : Math.abs(marketValueOneOriginCredit),
       domestic_currency_credit: marketValueOneOriginCredit > 0 ? null : Math.abs(marketValueOneOriginCredit)
     });
+    if (Number(marketValueOneOriginCredit) === 0) {
+      Object.assign(result8, { visibility: ConstData.Visibility.hidden });
+    }
 
+    const allRecordsArr = [result1, result2, result3, result4, result5, result6, result7, result8];
+    try {
+      await getRepository(OutputVoucher).insert(allRecordsArr);
+      console.log(greenBoldText(`${stockName} voucher result insert successfully`));
+    } catch (e) { console.log(warningText('output voucher insert error happened: '), e); }
+  }
+
+  public async generateSpecialResults() {
+    const specialRecords = await this.dataProcessor.specialRecords();
+
+    if (!specialRecords.length) { return; }
+
+    const date = String(specialRecords[0].tradeDate);
+    const year = date.slice(0, 4);
+    const month = date.slice(4, 6);
+    const lastDay = this.dataProcessor.monthLastDay(Number(month), Number(year));
+    const documentMakeDate = `${year}-${month}-${lastDay}`;
+
+    const commonTpl = {
+      account_book: ConstData.AccountBookCode,
+      voucher_type: ConstData.VoucherTypeCode,
+      voucher_code: ConstData.voucherCode,
+      attached_documents: Number(ConstData.AttachedDocNum),
+      document_maker_code: ConstData.DocMakerCode,
+      document_make_date: documentMakeDate,
+      currency: ConstData.Currency,
+      business_unit_code: ConstData.BizUnitCode,
+      bussiness_date: documentMakeDate,
+      assist_accounting: null,
+      visibility: 'show'
+    };
     // 买卖标志为“卖出” + 备注不是“证券卖出” 的对应的 成交额数据
-    const specialRecords = await this.dataProcessor.specialRecords(stockName);
+    // const specialRecords = await this.dataProcessor.specialRecords(stockName);
     const specialResults = specialRecords.map((record) => {
       return Object.assign({}, commonTpl, {
         id: uniqid(IdPrefix.Voucher),
         record_counter: this.indexCounter(),
         record_name: ConstData.RecordName.specialRecord,
-        stock_name: stockName,
+        stock_name: record.stockName,
         abstract: '东证账户结息',
         account_code: ConstData.AccountCode.specialRecord,
         original_currency_debit: null,
@@ -188,7 +243,7 @@ export class ResultsAssembler {
         id: uniqid(IdPrefix.Voucher),
         record_counter: this.indexCounter(),
         record_name: ConstData.RecordName.specialRecordSum,
-        stock_name: stockName,
+        stock_name: '',
         abstract: '东证账户结息',
         account_code: ConstData.AccountCode.specialRecordSum,
         original_currency_debit: sumValue,
@@ -198,15 +253,12 @@ export class ResultsAssembler {
       });
     }
 
-    // insert all records
-    let allRecordsArr = [result1, result2, result3, result4, result5, result6, result7, result8];
-    if (specialRecords.length) {
-      allRecordsArr = allRecordsArr.concat(specialResults, specialResultsSum);
-    }
+    const allSpecialRecords = specialResults.concat(specialResultsSum);
+
     try {
-      await getRepository(OutputVoucher).insert(allRecordsArr);
-      console.log(greenBoldText(`${stockName} veucher result insert successfully`));
-    } catch (e) { console.log(warningText('output voucher insert error happened: '), e); }
+      await getRepository(OutputVoucher).insert(allSpecialRecords);
+      console.log(greenBoldText(`special voucher result insert successfully`));
+    } catch (e) { console.log(warningText('special output voucher insert error happened: '), e); }
   }
 
   public async generateAllVoucherResults() {
@@ -215,6 +267,8 @@ export class ResultsAssembler {
     for (let i = 0, len = allStockNames.length; i < len; i++) {
       await this.generateSingleVoucherResult(allStockNames[i].stockName);
     }
+    await this.generateSpecialResults();
+
     console.log(greenBoldText('all stock voucher results inserted'));
   }
 
@@ -227,44 +281,44 @@ export class ResultsAssembler {
       inner_unit: null
     };
 
-    const result1Data: Array<{ recordCounter: number, originalCurrencyDebit: string }> = await getRepository(OutputVoucher)
+    const result1Data: Array<{ recordCounter: number, originalCurrencyDebit: string, visibility: string }> = await getRepository(OutputVoucher)
       .createQueryBuilder()
-      .select('record_counter AS recordCounter, original_currency_debit AS originalCurrencyDebit')
+      .select('record_counter AS recordCounter, original_currency_debit AS originalCurrencyDebit, visibility AS visibility')
       .where(`record_name = "${ConstData.RecordName['1-buyCost']}"`)
       .andWhere(`stock_name = "${stockName}"`)
       .execute();
 
-    const result2Data: Array<{ recordCounter: number, originalCurrencyDebit: string }> = await getRepository(OutputVoucher)
+    const result2Data: Array<{ recordCounter: number, originalCurrencyDebit: string, visibility: string }> = await getRepository(OutputVoucher)
       .createQueryBuilder()
-      .select('record_counter AS recordCounter, original_currency_debit AS originalCurrencyDebit')
+      .select('record_counter AS recordCounter, original_currency_debit AS originalCurrencyDebit, visibility AS visibility')
       .where(`record_name = "${ConstData.RecordName['2-buyCommission']}"`)
       .andWhere(`stock_name = "${stockName}"`)
       .execute();
 
-    const result3Data: Array<{ recordCounter: number, originalCurrencyCredit: string }> = await getRepository(OutputVoucher)
+    const result3Data: Array<{ recordCounter: number, originalCurrencyCredit: string, visibility: string }> = await getRepository(OutputVoucher)
       .createQueryBuilder()
-      .select('record_counter AS recordCounter, original_currency_credit AS originalCurrencyCredit')
+      .select('record_counter AS recordCounter, original_currency_credit AS originalCurrencyCredit, visibility AS visibility')
       .where(`record_name = "${ConstData.RecordName['3-sellCost']}"`)
       .andWhere(`stock_name = "${stockName}"`)
       .execute();
 
-    const result4Data: Array<{ recordCounter: number, originalCurrencyCredit: string }> = await getRepository(OutputVoucher)
+    const result4Data: Array<{ recordCounter: number, originalCurrencyCredit: string, visibility: string }> = await getRepository(OutputVoucher)
       .createQueryBuilder()
-      .select('record_counter AS recordCounter, original_currency_credit AS originalCurrencyCredit')
+      .select('record_counter AS recordCounter, original_currency_credit AS originalCurrencyCredit, visibility AS visibility')
       .where(`record_name = "${ConstData.RecordName['4-sellCommission']}"`)
       .andWhere(`stock_name = "${stockName}"`)
       .execute();
 
-    const result5Data: Array<{ recordCounter: number, originalCurrencyCredit: string }> = await getRepository(OutputVoucher)
+    const result5Data: Array<{ recordCounter: number, originalCurrencyCredit: string, visibility: string }> = await getRepository(OutputVoucher)
       .createQueryBuilder()
-      .select('record_counter AS recordCounter, original_currency_credit AS originalCurrencyCredit')
+      .select('record_counter AS recordCounter, original_currency_credit AS originalCurrencyCredit, visibility AS visibility')
       .where(`record_name = "${ConstData.RecordName['5-profitLoss']}"`)
       .andWhere(`stock_name = "${stockName}"`)
       .execute();
 
-    const resultSpecial: Array<{ recordCounter: number, originalCurrencyCredit: string }> = await getRepository(OutputVoucher)
+    const resultSpecial: Array<{ recordCounter: number, originalCurrencyCredit: string, visibility: string }> = await getRepository(OutputVoucher)
       .createQueryBuilder()
-      .select('record_counter AS recordCounter, original_currency_credit AS originalCurrencyCredit')
+      .select('record_counter AS recordCounter, original_currency_credit AS originalCurrencyCredit, visibility AS visibility')
       .where(`record_name = "${ConstData.RecordName.specialRecord}"`)
       .andWhere(`stock_name = "${stockName}"`)
       .execute();
@@ -277,7 +331,8 @@ export class ResultsAssembler {
       original_currency: result1Data[0].originalCurrencyDebit,
       org_domestic_currency: result1Data[0].originalCurrencyDebit,
       currency_flow_name: ConstData.CurrencyFlowName['1-buyCost'],
-      currency_flow_code: ConstData.CurrencyFlowCode['1-buyCost']
+      currency_flow_code: ConstData.CurrencyFlowCode['1-buyCost'],
+      visibility: result1Data[0].visibility
     });
 
     const flowResult2 = Object.assign({}, commonTpl, {
@@ -288,7 +343,8 @@ export class ResultsAssembler {
       original_currency: -result2Data[0].originalCurrencyDebit,
       org_domestic_currency: -result2Data[0].originalCurrencyDebit,
       currency_flow_name: ConstData.CurrencyFlowName['2-buyCommission'],
-      currency_flow_code: ConstData.CurrencyFlowCode['2-buyCommission']
+      currency_flow_code: ConstData.CurrencyFlowCode['2-buyCommission'],
+      visibility: result2Data[0].visibility
     });
 
     const flowResult3 = Object.assign({}, commonTpl, {
@@ -299,7 +355,8 @@ export class ResultsAssembler {
       original_currency: result3Data[0].originalCurrencyCredit,
       org_domestic_currency: result3Data[0].originalCurrencyCredit,
       currency_flow_name: ConstData.CurrencyFlowName['3-sellCost'],
-      currency_flow_code: ConstData.CurrencyFlowCode['3-sellCost']
+      currency_flow_code: ConstData.CurrencyFlowCode['3-sellCost'],
+      visibility: result3Data[0].visibility
     });
 
     const flowResult4 = Object.assign({}, commonTpl, {
@@ -307,10 +364,11 @@ export class ResultsAssembler {
       record_counter: result4Data[0].recordCounter,
       record_name: ConstData.RecordName['4-sellCommission'],
       stock_name: stockName,
-      original_currency: -result4Data[0].originalCurrencyCredit,
-      org_domestic_currency: -result4Data[0].originalCurrencyCredit,
+      original_currency: result4Data[0].originalCurrencyCredit,
+      org_domestic_currency: result4Data[0].originalCurrencyCredit,
       currency_flow_name: ConstData.CurrencyFlowName['4-sellCommission'],
-      currency_flow_code: ConstData.CurrencyFlowCode['4-sellCommission']
+      currency_flow_code: ConstData.CurrencyFlowCode['4-sellCommission'],
+      visibility: result4Data[0].visibility
     });
 
     const flowResult5 = Object.assign({}, commonTpl, {
@@ -321,7 +379,8 @@ export class ResultsAssembler {
       original_currency: result5Data[0].originalCurrencyCredit,
       org_domestic_currency: result5Data[0].originalCurrencyCredit,
       currency_flow_name: ConstData.CurrencyFlowName['5-profitLoss'],
-      currency_flow_code: ConstData.CurrencyFlowCode['5-profitLoss']
+      currency_flow_code: ConstData.CurrencyFlowCode['5-profitLoss'],
+      visibility: result5Data[0].visibility
     });
 
     const flowSpecialResults = resultSpecial.map((result) => {
@@ -333,7 +392,8 @@ export class ResultsAssembler {
         original_currency: result.originalCurrencyCredit,
         org_domestic_currency: result.originalCurrencyCredit,
         currency_flow_name: ConstData.CurrencyFlowName.specialRecord,
-        currency_flow_code: ConstData.CurrencyFlowCode.specialRecord
+        currency_flow_code: ConstData.CurrencyFlowCode.specialRecord,
+        visibility: result.visibility
       });
     });
 

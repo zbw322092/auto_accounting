@@ -9,9 +9,12 @@ const bootstrape = async () => {
   try {
     await createConnection(nconf.get('database'));
 
+    // const sourceReader = new SourceReader();
+    // sourceReader.readFileStream('data-source.xlsx');
+
     const resultsAssembler = new ResultsAssembler();
-    resultsAssembler.generateAllFlowResults();
-    // resultsAssembler.generateAllVoucherResults();
+    await resultsAssembler.generateAllVoucherResults();
+    await resultsAssembler.generateAllFlowResults();
 
   } catch (e) { console.error(e); }
 };

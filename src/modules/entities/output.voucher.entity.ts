@@ -69,4 +69,7 @@ export class OutputVoucher {
 
   @Column({ type: 'varchar', nullable: true })
   public assist_accounting?: string;
+
+  @Column({ type: 'varchar', default: 'show' })
+  public visibility: string;
 }
