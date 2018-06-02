@@ -67,6 +67,10 @@ export class OutputVoucher {
   @Column({ type: 'varchar', length: 50 })
   public bussiness_date: string;
 
+  // 组织本币汇率
+  @Column({ type: 'decimal', precision: 5, scale: 2 })
+  public org_domestic_currency_rate: string;
+
   @Column({ type: 'varchar', nullable: true })
   public assist_accounting?: string;
 

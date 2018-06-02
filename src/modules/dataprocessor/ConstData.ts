@@ -68,6 +68,9 @@ export namespace ConstData {
   // 业务单元编码
   export const BizUnitCode = '49';
 
+  // 组织本币汇率
+  export const OrgDomesticCurrencyRate = '1.00';
+
   // 记录在最终的表中是否可见
   export enum Visibility {
     'show' = 'show',

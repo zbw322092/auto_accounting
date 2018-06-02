@@ -34,7 +34,8 @@ export class ResultsAssembler {
       currency: ConstData.Currency,
       business_unit_code: ConstData.BizUnitCode,
       bussiness_date: documentMakeDate,
-      assist_accounting: assistAccounting
+      assist_accounting: assistAccounting,
+      org_domestic_currency_rate: ConstData.OrgDomesticCurrencyRate
     };
 
     /**
@@ -213,6 +214,7 @@ export class ResultsAssembler {
       business_unit_code: ConstData.BizUnitCode,
       bussiness_date: documentMakeDate,
       assist_accounting: null,
+      org_domestic_currency_rate: ConstData.OrgDomesticCurrencyRate,
       visibility: 'show'
     };
     // 买卖标志为“卖出” + 备注不是“证券卖出” 的对应的 成交额数据
