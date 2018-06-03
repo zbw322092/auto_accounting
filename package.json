@@ -1,6 +1,6 @@
 {
   "name": "auto_accounting",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "description": "automate accounting stuff",
   "main": "index.js",
   "author": "zbw322092 <zbw322092@hotmail.com>",
