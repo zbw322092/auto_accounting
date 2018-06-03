@@ -34,8 +34,8 @@ export class ResultsAssembler {
       currency: ConstData.Currency,
       business_unit_code: ConstData.BizUnitCode,
       bussiness_date: documentMakeDate,
-      assist_accounting: assistAccounting,
-      org_domestic_currency_rate: ConstData.OrgDomesticCurrencyRate
+      org_domestic_currency_rate: ConstData.OrgDomesticCurrencyRate,
+      assist_accounting: assistAccounting
     };
 
     /**
@@ -60,6 +60,7 @@ export class ResultsAssembler {
       Object.assign(result1, { visibility: ConstData.Visibility.hidden });
     }
 
+    console.log(result1);
     // 2. 买入手续费
     const buyCommissionSum = await this.dataProcessor.buyCommissionSum(stockName);
     const result2 = Object.assign({}, commonTpl, {
@@ -141,10 +142,11 @@ export class ResultsAssembler {
       stock_name: stockName,
       abstract: '东证账户变动',
       account_code: ConstData.AccountCode['6-fundingDiff'],
-      original_currency_debit: debitCreditDiff > 0 ? null : debitCreditDiff,
-      domestic_currency_debit: debitCreditDiff > 0 ? null : debitCreditDiff,
-      original_currency_credit: debitCreditDiff > 0 ? debitCreditDiff : null,
-      domestic_currency_credit: debitCreditDiff > 0 ? debitCreditDiff : null
+      original_currency_debit: null,
+      domestic_currency_debit: null,
+      original_currency_credit: debitCreditDiff,
+      domestic_currency_credit: debitCreditDiff,
+      assist_accounting: null
     });
     if (Number(debitCreditDiff) === 0) {
       Object.assign(result6, { visibility: ConstData.Visibility.hidden });

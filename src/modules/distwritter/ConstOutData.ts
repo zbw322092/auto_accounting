@@ -1,7 +1,7 @@
 export namespace ConstOutData {
 
   export enum VHeaders {
-    'h1' = 'null_$head,main_m_pk_accountingbook,main_m_pk_vouchertype,main_m_num,main_m_attachment,main_pk_prepared,main_m_prepareddate,m_explanation,m_accsubjcode,m_pk_currtype,m_debitamount,m_localdebitamount,m_groupdebitamount,m_globaldebitamount,unitname,m_price,m_debitquantity,m_creditquantity,m_creditamount,m_localcreditamount,m_groupcreditamount,m_globalcreditamount,m_checkno,m_checkdate,verifyno,verifydate,m_bankaccount,billtype,m_checkstyle,vat_pk_vatcountry,vat_pk_receivecountry,vat_businesscode,vat_pk_clientvatcode,vat_pk_suppliervatcode,vat_pk_taxcode,vat_direction,vat_moneyamount,m_excrate2,excrate3,excrate4,ass_1,ass_2,ass_3,ass_4,ass_5,ass_6,ass_7,ass_8,ass_9',
+    'h1' = '"null_$head,main_m_pk_accountingbook,main_m_pk_vouchertype,main_m_num,main_m_attachment,main_pk_prepared,main_m_prepareddate,m_explanation,m_accsubjcode,m_pk_currtype,m_debitamount,m_localdebitamount,m_groupdebitamount,m_globaldebitamount,unitname,m_price,m_debitquantity,m_creditquantity,m_creditamount,m_localcreditamount,m_groupcreditamount,m_globalcreditamount,m_checkno,m_checkdate,verifyno,verifydate,m_bankaccount,billtype,m_checkstyle,vat_pk_vatcountry,vat_pk_receivecountry,vat_businesscode,vat_pk_clientvatcode,vat_pk_suppliervatcode,vat_pk_taxcode,vat_direction,vat_moneyamount,m_excrate2,excrate3,excrate4,ass_1,ass_2,ass_3,ass_4,ass_5,ass_6,ass_7,ass_8,ass_9"',
     'h2' = '* 核算账簿',
     'h3' = '* 凭证类别编码',
     'h4' = '* 凭证号',
@@ -53,10 +53,10 @@ export namespace ConstOutData {
   }
 
   export const VHeadersArr = [VHeaders.h1, VHeaders.h2, VHeaders.h3, VHeaders.h4, VHeaders.h5, VHeaders.h6, VHeaders.h7, VHeaders.h8, VHeaders.h9, VHeaders.h10,
-    VHeaders.h11, VHeaders.h12, VHeaders.h13, VHeaders.h14, VHeaders.h15, VHeaders.h16, VHeaders.h17, VHeaders.h18, VHeaders.h19, VHeaders.h20,
-    VHeaders.h21, VHeaders.h22, VHeaders.h23, VHeaders.h24, VHeaders.h25, VHeaders.h26, VHeaders.h27, VHeaders.h28, VHeaders.h29, VHeaders.h30,
-    VHeaders.h31, VHeaders.h32, VHeaders.h33, VHeaders.h34, VHeaders.h35, VHeaders.h36, VHeaders.h37, VHeaders.h38, VHeaders.h39, VHeaders.h40,
-    VHeaders.h41, VHeaders.h42, VHeaders.h43, VHeaders.h44, VHeaders.h45, VHeaders.h46, VHeaders.h47, VHeaders.h48, VHeaders.h49];
+  VHeaders.h11, VHeaders.h12, VHeaders.h13, VHeaders.h14, VHeaders.h15, VHeaders.h16, VHeaders.h17, VHeaders.h18, VHeaders.h19, VHeaders.h20,
+  VHeaders.h21, VHeaders.h22, VHeaders.h23, VHeaders.h24, VHeaders.h25, VHeaders.h26, VHeaders.h27, VHeaders.h28, VHeaders.h29, VHeaders.h30,
+  VHeaders.h31, VHeaders.h32, VHeaders.h33, VHeaders.h34, VHeaders.h35, VHeaders.h36, VHeaders.h37, VHeaders.h38, VHeaders.h39, VHeaders.h40,
+  VHeaders.h41, VHeaders.h42, VHeaders.h43, VHeaders.h44, VHeaders.h45, VHeaders.h46, VHeaders.h47, VHeaders.h48, VHeaders.h49];
 
   export interface IVoucherData {
     record_counter: string;
@@ -77,5 +77,36 @@ export namespace ConstOutData {
     bussiness_date: string;
     org_domestic_currency_rate: string;
     assist_accounting: string;
+  }
+
+  export enum FHeaders {
+    'h1' = '"cashflow,m_flag,cashflowcurr,m_money,m_moneymain,m_moneygroup,m_moneyglobal,cashflowinnercorp,cashflowName,cashflowCode"',
+    'h2' = '方向',
+    'h3' = '分析币种',
+    'h4' = '原币',
+    'h5' = '组织本币',
+    'h6' = '集团本币',
+    'h7' = '全局本币',
+    'h8' = '内部单位',
+    'h9' = '现金流量名称',
+    'h10' = '现金流量编码'
+  }
+
+  export const FHeadersArr = [
+    FHeaders.h1, FHeaders.h2, FHeaders.h3, FHeaders.h4, FHeaders.h5,
+    FHeaders.h6, FHeaders.h7, FHeaders.h8, FHeaders.h9, FHeaders.h10
+  ];
+
+  export interface IFlowData {
+    record_counter: string;
+    direction: string;
+    analyse_currency: string;
+    original_currency: string;
+    org_domestic_currency: string;
+    group_domestic_currency: string;
+    overall_domestic_currency: string;
+    inner_unit: string;
+    currency_flow_name: string;
+    currency_flow_code: string;
   }
 }

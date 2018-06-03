@@ -1,5 +1,6 @@
 {
   "paths": {
-    "dataSource": "./data/sources/"
+    "dataSource": "./data/sources/",
+    "dataDist": "./data/dist"
   }
 }
