@@ -23,7 +23,7 @@ export namespace ConstData {
     '6-fundingDiff' = '10310101',
     '7-marketValue1' = '61010101',
     '8-marketValue2' = '11010102',
-    'specialRecord' = '601101',
+    'specialRecord' = '61110101',
     'specialRecordSum' = '10310101'
   }
 

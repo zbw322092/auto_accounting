@@ -70,10 +70,10 @@ export class ResultsAssembler {
       stock_name: stockName,
       abstract: `买入${stockName}手续费`,
       account_code: ConstData.AccountCode['2-buyCommission'],
-      original_currency_debit: buyCommissionSum,
-      domestic_currency_debit: buyCommissionSum,
-      original_currency_credit: null,
-      domestic_currency_credit: null
+      original_currency_debit: null,
+      domestic_currency_debit: null,
+      original_currency_credit: -buyCommissionSum,
+      domestic_currency_credit: -buyCommissionSum
     });
     if (Number(buyCommissionSum) === 0) {
       Object.assign(result2, { visibility: ConstData.Visibility.hidden });
@@ -215,26 +215,42 @@ export class ResultsAssembler {
       currency: ConstData.Currency,
       business_unit_code: ConstData.BizUnitCode,
       bussiness_date: documentMakeDate,
-      assist_accounting: null,
       org_domestic_currency_rate: ConstData.OrgDomesticCurrencyRate,
       visibility: 'show'
     };
     // 买卖标志为“卖出” + 备注不是“证券卖出” 的对应的 成交额数据
-    // const specialRecords = await this.dataProcessor.specialRecords(stockName);
-    const specialResults = specialRecords.map((record) => {
-      return Object.assign({}, commonTpl, {
-        id: uniqid(IdPrefix.Voucher),
-        record_counter: this.indexCounter(),
-        record_name: ConstData.RecordName.specialRecord,
-        stock_name: record.stockName,
-        abstract: '东证账户结息',
-        account_code: ConstData.AccountCode.specialRecord,
-        original_currency_debit: null,
-        domestic_currency_debit: null,
-        original_currency_credit: record.tradeTotalPrice,
-        domestic_currency_credit: record.tradeTotalPrice
-      });
-    });
+    const specialResults: any[] = [];
+    for (let i = 0, len = specialRecords.length; i < len; i++) {
+      specialResults.push(
+        Object.assign({}, commonTpl, {
+          id: uniqid(IdPrefix.Voucher),
+          record_counter: this.indexCounter(),
+          record_name: ConstData.RecordName.specialRecord,
+          stock_name: specialRecords[i].stockName,
+          abstract: '东证账户结息',
+          account_code: ConstData.AccountCode.specialRecord,
+          original_currency_debit: null,
+          domestic_currency_debit: null,
+          original_currency_credit: specialRecords[i].tradeTotalPrice,
+          domestic_currency_credit: specialRecords[i].tradeTotalPrice,
+          assist_accounting: await this.dataProcessor.assistAccounting(specialRecords[i].stockName)
+        })
+      );
+    }
+    // const specialResults = specialRecords.map((record) => {
+    //   return Object.assign({}, commonTpl, {
+    //     id: uniqid(IdPrefix.Voucher),
+    //     record_counter: this.indexCounter(),
+    //     record_name: ConstData.RecordName.specialRecord,
+    //     stock_name: record.stockName,
+    //     abstract: '东证账户结息',
+    //     account_code: ConstData.AccountCode.specialRecord,
+    //     original_currency_debit: null,
+    //     domestic_currency_debit: null,
+    //     original_currency_credit: record.tradeTotalPrice,
+    //     domestic_currency_credit: record.tradeTotalPrice
+    //   });
+    // });
 
     // 买卖标志为“卖出” + 备注不是“证券卖出” 的对应的 成交额数据 的 总和
     let sumValue: number = 0;
@@ -253,7 +269,8 @@ export class ResultsAssembler {
         original_currency_debit: sumValue,
         domestic_currency_debit: sumValue,
         original_currency_credit: null,
-        domestic_currency_credit: null
+        domestic_currency_credit: null,
+        assist_accounting: null
       });
     }
 
@@ -292,9 +309,9 @@ export class ResultsAssembler {
       .andWhere(`stock_name = "${stockName}"`)
       .execute();
 
-    const result2Data: Array<{ recordCounter: number, originalCurrencyDebit: string, visibility: string }> = await getRepository(OutputVoucher)
+    const result2Data: Array<{ recordCounter: number, originalCurrencyCredit: string, visibility: string }> = await getRepository(OutputVoucher)
       .createQueryBuilder()
-      .select('record_counter AS recordCounter, original_currency_debit AS originalCurrencyDebit, visibility AS visibility')
+      .select('record_counter AS recordCounter, original_currency_credit AS originalCurrencyCredit, visibility AS visibility')
       .where(`record_name = "${ConstData.RecordName['2-buyCommission']}"`)
       .andWhere(`stock_name = "${stockName}"`)
       .execute();
@@ -344,8 +361,8 @@ export class ResultsAssembler {
       record_counter: result2Data[0].recordCounter,
       record_name: ConstData.RecordName['2-buyCommission'],
       stock_name: stockName,
-      original_currency: -result2Data[0].originalCurrencyDebit,
-      org_domestic_currency: -result2Data[0].originalCurrencyDebit,
+      original_currency: result2Data[0].originalCurrencyCredit,
+      org_domestic_currency: result2Data[0].originalCurrencyCredit,
       currency_flow_name: ConstData.CurrencyFlowName['2-buyCommission'],
       currency_flow_code: ConstData.CurrencyFlowCode['2-buyCommission'],
       visibility: result2Data[0].visibility
